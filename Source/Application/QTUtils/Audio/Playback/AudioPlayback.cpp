@@ -49,6 +49,9 @@ namespace Audio
 		QAudioDevice dev = QMediaDevices::defaultAudioOutput();
 		QString desc = dev.description();
 
+		if (!pDoc || !pDoc->isValid() || !pSink)
+			return;
+
 		spdlog::info("Device: {}", desc.toStdString());
 		spdlog::info("Format: {} Hz, {} ch, sampleFormat={}",
 			pSink->format().sampleRate(),
@@ -57,8 +60,14 @@ namespace Audio
 
 		spdlog::info("Sink state after start: {}", (int)pSink->state());
 
-		if (!pDoc || !pDoc->isValid())
-			return;
+
+		if (pSink->state() != QAudio::StoppedState)
+		{
+			pSink->stop();
+			pSink->reset();
+		}
+
+		mDevice.seekToFrame(0);
 
 		if (!mDevice.isOpen())
 			mDevice.open(QIODevice::ReadOnly);
@@ -72,11 +81,11 @@ namespace Audio
 
 	void AudioPlayback::stop()
 	{
-		if (pSink)
-			pSink->stop();
+		if (!pSink)
+			return;
 
-		if (mDevice.isOpen())
-			mDevice.close();
+		pSink->stop();
+		mDevice.seekToFrame(0);
 	}
 
 	void AudioPlayback::seekToFrame(std::int64_t frame)
