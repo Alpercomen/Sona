@@ -108,7 +108,8 @@ namespace Audio
 
 	void AudioPlayback::stop()
 	{
-        if (!pSink) return;
+        if (!pSink) 
+            return;
 
         mPendingStart = false;
 
