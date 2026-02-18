@@ -78,6 +78,22 @@ namespace UI
 			.arg(mDoc.channels)
 			.arg(mDoc.durationSeconds(), 0, 'f', 2)
 			.arg(mZoom, 0, 'f', 2));
+
+		// Draw playhead line (bright red)
+		if (mPlayheadFrame >= 0 && mDoc.isValid())
+		{
+			// only draw if within visible range
+			if (mPlayheadFrame >= start && mPlayheadFrame <= end)
+			{
+				const double t = (double)(mPlayheadFrame - start) / (double)range; // 0..1
+				const int x = (int)std::round(t * (w - 1));
+
+				QPen pen(QColor(255, 60, 60));
+				pen.setWidth(2);
+				p.setPen(pen);
+				p.drawLine(x, 0, x, h);
+			}
+		}
 	}
 
 	void WaveformView::wheelEvent(QWheelEvent* e)

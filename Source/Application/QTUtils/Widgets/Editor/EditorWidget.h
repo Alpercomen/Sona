@@ -4,6 +4,7 @@
 #include <Application/QTUtils/Widgets/Waveform/WaveformView.h>
 
 #include <QWidget>
+#include <QTimer>
 
 class QLabel;
 
@@ -21,6 +22,7 @@ namespace UI
 		{
 			mPlayback.setDocument(doc);
 			pWaveView->setDocument(doc, sourcePath);
+			pWaveView->setPlayheadFrame(0);
 		}
 
 		const Audio::AudioDocument& getDocument() const 
@@ -36,6 +38,7 @@ namespace UI
 		UI::WaveformView* pWaveView = nullptr;
 		Audio::AudioPlayback mPlayback;
 		QLabel* pHint = nullptr;
+		QTimer mPlayheadTimer;
 
 		void setHintText(const QString& text);
 	};

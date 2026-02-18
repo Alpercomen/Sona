@@ -14,9 +14,21 @@ namespace UI
 
 		void setZoom(double zoom) { mZoom = zoom; }
 		void setCenterFrame(std::int64_t centerFrame) { mCenterFrame = centerFrame; }
+		void setDocument(Audio::AudioDocument doc, QString sourcePath = {})
+		{
+			mDoc = std::move(doc);
+			fitToView();
+		}
+		void setPlayheadFrame(std::int64_t frame)
+		{
+			mPlayheadFrame = frame;
+			update();
+		}
 
 		double getZoom() const { return mZoom; }
 		std::int64_t getCenterFrame() const { return mCenterFrame; }
+		const Audio::AudioDocument& getDocument() const { return mDoc; }
+		std::int64_t getPlayheadFrame() const { return mPlayheadFrame; }
 
 		void fitToView()
 		{
@@ -33,14 +45,6 @@ namespace UI
 			update();
 		}
 
-		void setDocument(Audio::AudioDocument doc, QString sourcePath = {})
-		{
-			mDoc = std::move(doc);
-			fitToView();
-		}
-
-		const Audio::AudioDocument& getDocument() const { return mDoc; }
-
 	protected:
 		void paintEvent(QPaintEvent* e) override;
 		void wheelEvent(QWheelEvent* e) override;
@@ -51,5 +55,6 @@ namespace UI
 
 		double mZoom = 1.0;
 		std::int64_t mCenterFrame = 0;
+		std::int64_t mPlayheadFrame = -1; // -1 = HIDDEN
 	};
 }

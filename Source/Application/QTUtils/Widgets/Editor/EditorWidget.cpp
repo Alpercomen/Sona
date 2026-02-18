@@ -31,16 +31,30 @@ namespace UI
 		pHint->setText("No audio loaded. Use File -> Open or drag & drop an audio file here.");
 		pHint->setAlignment(Qt::AlignCenter);
 		root->addWidget(pHint, 0);
+
+		mPlayheadTimer.setInterval(16);
+		connect(&mPlayheadTimer, &QTimer::timeout, this, [this]()
+			{
+				if (!pWaveView) 
+					return;
+
+				const std::int64_t f = mPlayback.getCurrentFrame();
+
+				pWaveView->setPlayheadFrame(f);
+			});
 	}
 
 	void EditorWidget::play()
 	{
 		mPlayback.play();
+		mPlayheadTimer.start();
 	}
 
 	void EditorWidget::stop()
 	{
 		mPlayback.stop();
+		pWaveView->setPlayheadFrame(mPlayback.getCurrentFrame());
+		mPlayheadTimer.stop();
 	}
 
 	void EditorWidget::dragEnterEvent(QDragEnterEvent* e)
@@ -72,8 +86,7 @@ namespace UI
 		}
 
 		// Set audio document for the wave view
-		pWaveView->setDocument(doc);
-		mPlayback.setDocument(std::move(doc));
+		setDocument(doc);
 		setHintText(QString("Loaded via drop:\n%1\n%2 Hz | %3 ch | %4 sec")
 			.arg(path)
 			.arg(doc.sampleRate)
