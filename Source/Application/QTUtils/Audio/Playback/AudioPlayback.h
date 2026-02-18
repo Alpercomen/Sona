@@ -16,13 +16,13 @@ namespace Audio
 	public:
 		explicit AudioPlayback(QObject* parent = nullptr);
 
+		std::int64_t getCurrentFrame() const { return mDevice.getCurrentFrame(); }
 		void setDocument(const Audio::AudioDocument doc);
 		void play();
 		void stop();
 		void seekToFrame(std::int64_t frame);
 
 		bool isPlaying() const { return pSink && pSink->state() == QAudio::ActiveState; }
-		std::int64_t getCurrentFrame() const;
 
 	private:
 		std::unique_ptr<Audio::AudioDocument> pDoc;

@@ -48,7 +48,7 @@ namespace Audio
         pSink = std::make_unique<QAudioSink>(dev, mFormat);
 
         connect(pSink.get(), &QAudioSink::stateChanged, this, [this](QAudio::State st) {
-            spdlog::info("QAudioSink stateChanged -> {}", (int)st);
+            spdlog::info("QAudioSink state changed -> {}", (int)st);
             });
 
         mDevice.setBuffer(pDoc->interleaved.data(), pDoc->frames, pDoc->channels);
@@ -97,10 +97,5 @@ namespace Audio
         }
 
         mDevice.seekToFrame(frame);
-	}
-
-	std::int64_t AudioPlayback::getCurrentFrame() const
-	{
-		return mDevice.getCurrentFrame();
 	}
 }
