@@ -5,12 +5,6 @@
 #include <Application/Core/Definitions/Singleton.h>
 #include <Application/Core/Definitions/BitwiseOperator.h>
 
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <vector>
-#include <algorithm>
-
 namespace Audio
 {
 

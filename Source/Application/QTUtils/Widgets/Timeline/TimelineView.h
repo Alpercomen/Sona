@@ -54,6 +54,7 @@ namespace UI
 		Int64 mPlayheadFrame = 0;
 		Int64 mStartFrame = 0;
 		Int64 mDragStartClipFrame = 0;
+		Int64 mDragGrabOffsetFrames = 0;
 
 		Float64 mZoom = 1.0;
 		Int32 mVScrollPx = 0;
@@ -63,8 +64,7 @@ namespace UI
 
 		Int32 frameToX(Int64 frame) const;
 		Int64 xToFrame(int x) const;
+		Int32 moveClipToTrack(Int32 fromTrack, Int32 fromClipIndex, Int32 toTrack);
 		Optional<HitClip> hitTestClip(const QPoint& pt) const;
 	};
-
-	void drawWaveform(QPainter& p, const Audio::AudioSource& src, const Audio::Clip& clip, const QRect& clipRect, Int64 viewStartFrame, Int64 viewEndFrame, Float64 framesPerPixel);
 }

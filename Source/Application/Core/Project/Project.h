@@ -3,7 +3,8 @@
 
 namespace Audio
 {
-    class Project {
+    class Project
+    {
     public:
         Project() = default;
         ~Project() = default;

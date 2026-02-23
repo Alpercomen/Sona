@@ -1,5 +1,6 @@
 #include <Application/QTUtils/Widgets/Timeline/TimelineView.h>
 #include <Application/QTUtils/Helper/Color.h>
+#include <Application/QTUtils/Helper/UI.h>
 
 #include <algorithm>
 #include <cmath>
@@ -304,7 +305,36 @@ namespace UI
 		return mStartFrame + (Int64)std::llround((Float64)x * framesPerPixel);
 	}
 
-	int TimelineView::frameToX(Int64 frame) const
+	Int32 TimelineView::moveClipToTrack(Int32 fromTrack, Int32 fromClipIndex, Int32 toTrack)
+	{
+		if (!mProject)
+			return -1;
+
+		if (fromTrack < 0 || toTrack < 0)
+			return -1;
+
+		if (fromTrack >= (Int32)mProject->tracks.size())
+			return -1;
+
+		if (toTrack >= (Int32)mProject->tracks.size())
+			return -1;
+
+		auto& src = mProject->tracks[(Usize)fromTrack].clips;
+		auto& dst = mProject->tracks[(Usize)toTrack].clips;
+
+		if (fromClipIndex < 0 || fromClipIndex >= (Int32)src.size())
+			return -1;
+
+		// Move the clip object across tracks
+		Audio::Clip clip = std::move(src[(size_t)fromClipIndex]);
+		src.erase(src.begin() + fromClipIndex);
+
+		// For now: just append (overlaps allowed).
+		dst.push_back(std::move(clip));
+		return (Int32)dst.size() - 1;
+	}
+
+	Int32 TimelineView::frameToX(Int64 frame) const
 	{
 		const Float64 framesPerPixel = getFramesPerPixel();
 		return (int)std::llround((Float64)(frame - mStartFrame) / framesPerPixel);
@@ -347,74 +377,5 @@ namespace UI
 		}
 
 		return std::nullopt;
-	}
-
-	static void drawWaveform(QPainter& p, const Audio::AudioSource& src, const Audio::Clip& clip, const QRect& clipRect, Int64 viewStartFrame, Int64 viewEndFrame, Float64 framesPerPixel)
-	{
-		if (clipRect.width() <= 2 || clipRect.height() <= 4)
-			return;
-
-		if (src.channels <= 0)
-			return;
-
-		const Int64 clipStart = clip.startFrameOnTimeline;
-		const Int64 clipLen = (clip.sourceOutFrame - clip.sourceInFrame);
-
-		if (clipLen <= 0)
-			return;
-
-		const Int64 clipEnd = clipStart + clipLen;
-
-		const Int64 visA = std::max(viewStartFrame, clipStart);
-		const Int64 visB = std::min(viewEndFrame, clipEnd);
-
-		if (visB <= visA)
-			return;
-
-		const Int64 srcA = clip.sourceInFrame + (visA - clipStart);
-		const Int64 srcB = clip.sourceInFrame + (visB - clipStart);
-
-		const Int32 xA = (int)std::round((visA - viewStartFrame) / framesPerPixel);
-		const Int32 xB = (int)std::round((visB - viewStartFrame) / framesPerPixel);
-
-		const Int32 px0 = std::max(0, xA);
-		const Int32 px1 = std::min((int)p.viewport().width(), xB);
-
-		if (px1 <= px0)
-			return;
-
-		const int visibleW = std::max(1, xB - xA);
-		const Float64 srcFramesPerPixel = (Float64)(srcB - srcA) / (Float64)visibleW;
-
-		const int midY = clipRect.center().y();
-		const int halfH = std::max(1, clipRect.height() / 2 - 2);
-
-		p.setPen(QColor(255, 255, 255, 180));
-
-		for (int px = px0; px < px1; ++px)
-		{
-			const int localX = px - xA;
-
-			const Int64 f0 = srcA + (Int64)std::floor(localX * srcFramesPerPixel);
-			const Int64 f1 = srcA + (Int64)std::floor((localX + 1) * srcFramesPerPixel);
-
-			const Int64 a = std::clamp<Int64>(f0, srcA, srcB - 1);
-			const Int64 b = std::clamp<Int64>(std::max<Int64>(f1, f0 + 1), srcA, srcB);
-
-			float mn = 1.0f, mx = -1.0f;
-
-			for (Int64 f = a; f < b; ++f)
-			{
-				const Int64 idx = f * src.channels;
-				const Float32 s = src.interleaved[(Usize)idx];
-				mn = std::min(mn, s);
-				mx = std::max(mx, s);
-			}
-
-			const Int32 y1 = midY - (Int32)std::round(mx * halfH);
-			const Int32 y2 = midY - (Int32)std::round(mn * halfH);
-
-			p.drawLine(px, y1, px, y2);
-		}
 	}
 }
